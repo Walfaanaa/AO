@@ -1,10 +1,8 @@
-
 import streamlit as st
 import pandas as pd
 from io import BytesIO
 import time
 import os
-from dotenv import load_dotenv
 
 # -------------------------------
 # 1️⃣ Page Setup
@@ -24,8 +22,8 @@ WINNER_FILE = "winners_record.xlsx"
 
 try:
     members_df = pd.read_excel(DATA_FILE)
-    st.success(f"✅ {len(AO(uqubii))} members loaded successfully from admin file.")
-    st.dataframe(AO(uqubii))
+    st.success(f"✅ {len(members_df)} members loaded successfully from admin file.")
+    st.dataframe(members_df)
 except FileNotFoundError:
     st.error("❌ AO(uqubii).xlsx file not found! Please upload it to your app folder or GitHub repo.")
     st.stop()
@@ -33,8 +31,7 @@ except FileNotFoundError:
 # -------------------------------
 # 3️⃣ Admin Authorization
 # -------------------------------
-load_dotenv()
-AUTHORIZED_CODE = os.getenv("STREAMLIT_ADMIN_PASSWORD")
+AUTHORIZED_CODE = st.secrets["ADMIN_PASSCODE"]   # <- Use Streamlit secrets
 
 password = st.text_input("Enter admin passcode to enable draw:", type="password")
 
@@ -87,7 +84,7 @@ if password == AUTHORIZED_CODE:
                 # Save winners record
                 winners.to_excel(WINNER_FILE, index=False)
 
-                # Download winners
+                # Download file
                 def convert_df_to_excel(df):
                     output = BytesIO()
                     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
@@ -107,4 +104,3 @@ else:
     if password:
         st.error("❌ Invalid passcode. Access denied.")
     st.info("You can view the member list, but only authorized staff can pick winners.")
-
