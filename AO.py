@@ -31,14 +31,14 @@ except FileNotFoundError:
 # -------------------------------
 # 3️⃣ Admin Authorization
 # -------------------------------
-# Prevent crash if ADMIN_PASSCODE is missing
-if "ADMIN_PASSCODE" not in st.secrets:
-    st.error("❌ Missing secret key: ADMIN_PASSCODE.\n\n"
+# Check for correct secret key
+if "STREAMLIT_ADMIN_PASSWORD" not in st.secrets:
+    st.error("❌ Missing secret key: STREAMLIT_ADMIN_PASSWORD.\n\n"
              "➡ Go to Streamlit Cloud → App → Settings → Secrets\n"
-             "Add:\n\nADMIN_PASSCODE = \"yourpasscode\"")
+             "Add:\n\nSTREAMLIT_ADMIN_PASSWORD = \"EGSA2025_%\"")
     st.stop()
 
-AUTHORIZED_CODE = st.secrets.get("ADMIN_PASSCODE")
+AUTHORIZED_CODE = st.secrets["STREAMLIT_ADMIN_PASSWORD"]
 
 password = st.text_input("Enter admin passcode to enable draw:", type="password")
 
@@ -49,7 +49,7 @@ if password == AUTHORIZED_CODE:
     st.success("🔓 Access granted!")
 
     # -------------------------------
-    # A. If previous winners exist -> allow only admin reset
+    # A. If previous winners exist → only admin reset allowed
     # -------------------------------
     if os.path.exists(WINNER_FILE):
         st.subheader("🎉 Previous Winners Already Recorded")
@@ -58,21 +58,21 @@ if password == AUTHORIZED_CODE:
         st.dataframe(prev)
 
         with st.expander("⚙️ Admin Reset Options"):
-            st.warning("⚠️ A previous draw exists. Resetting allows a NEW round.")
+            st.warning("⚠️ A previous draw exists. Resetting will allow a NEW round.")
 
             if st.button("🔄 Reset Winners (Admin Only)"):
                 os.remove(WINNER_FILE)
-                st.success("✅ Reset successful! Ready for a new draw.")
+                st.success("✅ Winners record cleared. Ready for a new draw.")
                 st.experimental_rerun()
 
     # -------------------------------
-    # B. No previous winners -> allow picking
+    # B. No previous record → allow picking new winners
     # -------------------------------
     else:
         st.subheader("🏆 Pick Winners")
 
         num_winners = st.number_input(
-            "Number of winners:",
+            "Number of winners to select:",
             min_value=1,
             max_value=len(members_df),
             value=1
@@ -90,15 +90,17 @@ if password == AUTHORIZED_CODE:
                     progress_text.text(f"Progress: {i}%")
                     progress_bar.progress(i)
 
+                # Random selection
                 winners = members_df.sample(n=num_winners).reset_index(drop=True)
 
                 st.success("🎉 Winners Selected!")
+                st.subheader("🏆 Winners List")
                 st.dataframe(winners)
 
-                # Save winners file
+                # Save winners record
                 winners.to_excel(WINNER_FILE, index=False)
 
-                # Download button
+                # Download Excel
                 def convert_df_to_excel(df):
                     output = BytesIO()
                     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
@@ -115,6 +117,6 @@ if password == AUTHORIZED_CODE:
                 )
 
 else:
-    if password:  
+    if password:
         st.error("❌ Invalid passcode.")
     st.info("🔐 Only authorized personnel can conduct the draw.")
