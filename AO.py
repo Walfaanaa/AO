@@ -3,6 +3,7 @@ import pandas as pd
 from io import BytesIO
 import time
 import os
+from dotenv import load_dotenv
 
 # -------------------------------
 # 1️⃣ Page Setup
@@ -22,57 +23,49 @@ WINNER_FILE = "winners_record.xlsx"
 
 try:
     members_df = pd.read_excel(DATA_FILE)
-    st.success(f"✅ {len(members_df)} members loaded successfully.")
+    st.success(f"✅ {len(members_df)} members loaded successfully from admin file.")
     st.dataframe(members_df)
 except FileNotFoundError:
-    st.error("❌ AO(uqubii).xlsx file not found! Upload it to your repository or app folder.")
+    st.error("❌ AO(uqubii).xlsx file not found! Please upload it to your app folder or GitHub repo.")
     st.stop()
 
 # -------------------------------
 # 3️⃣ Admin Authorization
 # -------------------------------
-# Check for correct secret key
-if "STREAMLIT_ADMIN_PASSWORD" not in st.secrets:
-    st.error("❌ Missing secret key: STREAMLIT_ADMIN_PASSWORD.\n\n"
-             "➡ Go to Streamlit Cloud → App → Settings → Secrets\n"
-             "Add:\n\nSTREAMLIT_ADMIN_PASSWORD = \"EGSA2025_%\"")
-    st.stop()
+load_dotenv()  # load .env file
+AUTHORIZED_CODE = os.getenv("STREAMLIT_ADMIN_PASSWORD")
 
-AUTHORIZED_CODE = st.secrets["STREAMLIT_ADMIN_PASSWORD"]
+if not AUTHORIZED_CODE:
+    st.error("❌ STREAMLIT_ADMIN_PASSWORD is missing in your .env file!")
+    st.stop()
 
 password = st.text_input("Enter admin passcode to enable draw:", type="password")
 
-# -------------------------------
-# 4️⃣ Authorized Section
-# -------------------------------
 if password == AUTHORIZED_CODE:
-    st.success("🔓 Access granted!")
+    st.success("Access granted! You can now enable the draw.")
 
     # -------------------------------
-    # A. If previous winners exist → only admin reset allowed
+    # Admin Reset
     # -------------------------------
     if os.path.exists(WINNER_FILE):
-        st.subheader("🎉 Previous Winners Already Recorded")
-
-        prev = pd.read_excel(WINNER_FILE)
-        st.dataframe(prev)
-
         with st.expander("⚙️ Admin Reset Options"):
-            st.warning("⚠️ A previous draw exists. Resetting will allow a NEW round.")
-
-            if st.button("🔄 Reset Winners (Admin Only)"):
+            st.warning("⚠️ A previous draw has already been conducted.")
+            if st.button("🔄 Reset for New Round (Admin Only)"):
                 os.remove(WINNER_FILE)
-                st.success("✅ Winners record cleared. Ready for a new draw.")
+                st.success("✅ Winners record deleted. You can now run a new draw.")
                 st.experimental_rerun()
 
+        # Show previous winners
+        previous_winners = pd.read_excel(WINNER_FILE)
+        st.subheader("🎉 Previous Winners")
+        st.dataframe(previous_winners)
+
     # -------------------------------
-    # B. No previous record → allow picking new winners
+    # Pick Winners
     # -------------------------------
     else:
-        st.subheader("🏆 Pick Winners")
-
         num_winners = st.number_input(
-            "Number of winners to select:",
+            "🏆 Number of winners to select",
             min_value=1,
             max_value=len(members_df),
             value=1
@@ -82,25 +75,22 @@ if password == AUTHORIZED_CODE:
             placeholder = st.empty()
             with placeholder.container():
                 st.info("Picking winners... Please wait.")
-
                 progress_text = st.empty()
                 progress_bar = st.progress(0)
                 for i in range(101):
-                    time.sleep(0.005)
+                    time.sleep(0.01)
                     progress_text.text(f"Progress: {i}%")
                     progress_bar.progress(i)
 
-                # Random selection
                 winners = members_df.sample(n=num_winners).reset_index(drop=True)
-
                 st.success("🎉 Winners Selected!")
-                st.subheader("🏆 Winners List")
+                st.subheader("🎉 Winners List")
                 st.dataframe(winners)
 
                 # Save winners record
                 winners.to_excel(WINNER_FILE, index=False)
 
-                # Download Excel
+                # Download winners
                 def convert_df_to_excel(df):
                     output = BytesIO()
                     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
@@ -110,13 +100,13 @@ if password == AUTHORIZED_CODE:
                 excel_data = convert_df_to_excel(winners)
 
                 st.download_button(
-                    "💾 Download Winners Excel",
-                    excel_data,
-                    "AO_lottery_winners.xlsx",
+                    label="💾 Download Winners as Excel",
+                    data=excel_data,
+                    file_name="AO_lottery_winners.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
 
 else:
     if password:
-        st.error("❌ Invalid passcode.")
-    st.info("🔐 Only authorized personnel can conduct the draw.")
+        st.error("❌ Invalid passcode. Access denied.")
+    st.info("You can view the member list, but only authorized staff can pick winners.")
