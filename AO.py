@@ -50,10 +50,14 @@ if password == AUTHORIZED_CODE:
     if os.path.exists(WINNER_FILE):
         with st.expander("⚙️ Admin Reset Options"):
             st.warning("⚠️ A previous draw has already been conducted.")
-            if st.button("🔄 Reset for New Round (Admin Only)"):
-                os.remove(WINNER_FILE)
-                st.success("✅ Winners record deleted. You can now run a new draw.")
-                st.experimental_rerun()
+            
+            reset_clicked = st.button("🔄 Reset for New Round (Admin Only)")
+            if reset_clicked:
+                try:
+                    os.remove(WINNER_FILE)
+                    st.success("✅ Winners record deleted. Please refresh the page to start a new draw.")
+                except Exception as e:
+                    st.error(f"Error deleting winners file: {e}")
 
         # Show previous winners
         previous_winners = pd.read_excel(WINNER_FILE)
