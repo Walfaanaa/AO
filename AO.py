@@ -9,25 +9,25 @@ from dotenv import load_dotenv
 # -------------------------------
 # 1️⃣ Page Setup
 # -------------------------------
-st.set_page_config(page_title="🎟️ EGSA Lottery Winners", layout="wide", page_icon="🎟️")
-st.title("🎟️ EGSA Lottery Winners App (Authorized & One-Time Draw)")
+st.set_page_config(page_title="🎟️ AO Lottery Winners", layout="wide", page_icon="🎟️")
+st.title("🎟️ AO Lottery Winners App (Authorized & One-Time Draw)")
 st.markdown(
-    "Welcome to the **EGSA Lottery Winners App**. "
+    "Welcome to the **AO Lottery Winners App**. "
     "This system ensures fair, transparent, and one-time-only draws managed by authorized personnel."
 )
 
 # -------------------------------
 # 2️⃣ Load Members Data
 # -------------------------------
-DATA_FILE = "members_data.xlsx"
+DATA_FILE = "AO(uqubii).xlsx"
 WINNER_FILE = "winners_record.xlsx"
 
 try:
     members_df = pd.read_excel(DATA_FILE)
-    st.success(f"✅ {len(members_df)} members loaded successfully from admin file.")
-    st.dataframe(members_df)
+    st.success(f"✅ {len(AO(uqubii))} members loaded successfully from admin file.")
+    st.dataframe(AO(uqubii))
 except FileNotFoundError:
-    st.error("❌ members_data.xlsx file not found! Please upload it to your app folder or GitHub repo.")
+    st.error("❌ AO(uqubii).xlsx file not found! Please upload it to your app folder or GitHub repo.")
     st.stop()
 
 # -------------------------------
@@ -99,7 +99,7 @@ if password == AUTHORIZED_CODE:
                 st.download_button(
                     label="💾 Download Winners as Excel",
                     data=excel_data,
-                    file_name="EGSA_lottery_winners.xlsx",
+                    file_name="AO_lottery_winners.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
 
@@ -107,3 +107,4 @@ else:
     if password:
         st.error("❌ Invalid passcode. Access denied.")
     st.info("You can view the member list, but only authorized staff can pick winners.")
+
