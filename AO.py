@@ -59,10 +59,11 @@ if password == AUTHORIZED_CODE:
                 except Exception as e:
                     st.error(f"Error deleting winners file: {e}")
 
-        # Show previous winners
-        previous_winners = pd.read_excel(WINNER_FILE)
-        st.subheader("🎉 Previous Winners")
-        st.dataframe(previous_winners)
+        # Show previous winners only if file exists
+        if os.path.exists(WINNER_FILE):
+            previous_winners = pd.read_excel(WINNER_FILE)
+            st.subheader("🎉 Previous Winners")
+            st.dataframe(previous_winners)
 
     # -------------------------------
     # Pick Winners
