@@ -41,7 +41,7 @@ except Exception as e:
 try:
     ADMIN_PASSWORD = st.secrets["STREAMLIT_ADMIN_PASSWORD"]
 except KeyError:
-    st.error("❌ Admin password not found in Streamlit Secrets.")
+    st.error("❌ Admin password not found in Streamlit Secrets. Please add it in Settings → Secrets.")
     st.stop()
 
 password = st.text_input(
