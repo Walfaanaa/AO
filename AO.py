@@ -115,3 +115,4 @@ else:
     if password:
         st.error("❌ Invalid passcode. Access denied.")
     st.info("You can view the member list, but only authorized staff can pick winners.")
+
