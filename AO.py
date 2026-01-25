@@ -12,6 +12,7 @@ st.set_page_config(
     layout="wide",
     page_icon="🎟️"
 )
+
 st.title("🎟️ EGSA Lottery Winners App (Authorized & One-Time Draw)")
 st.markdown(
     "Welcome to the **EGSA Lottery Winners App**. "
@@ -21,7 +22,7 @@ st.markdown(
 # -------------------------------
 # 2️⃣ Load Members Data
 # -------------------------------
-DATA_FILE = "AO_uqubii.xlsx"
+DATA_FILE = "AO_uqubii.xlsx"   # Your member Excel file
 WINNER_FILE = "winners_record.xlsx"
 
 try:
