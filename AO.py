@@ -18,7 +18,7 @@ st.markdown(
     """
     **Authorized & One-Time Lottery Draw System**
 
-    This application guarantees a **fair, transparent, and single-execution draw**
+    This system ensures **fair, transparent, and one-time-only draws**
     controlled strictly by **authorized administrators**.
     """
 )
@@ -26,7 +26,7 @@ st.markdown(
 # ===============================
 # 2️⃣ FILE NAMES
 # ===============================
-DATA_FILE = "AO_uqubii.xlsx"      # your actual Excel file
+DATA_FILE = "AO_uqubii.xlsx"      # your Excel file
 WINNER_FILE = "winners_record.xlsx"
 
 # ===============================
@@ -57,24 +57,24 @@ password = st.text_input("🔐 Enter admin passcode to enable draw:", type="pass
 if password == ADMIN_PASSWORD:
     st.success("✅ Access granted. Admin controls unlocked.")
 
-    # ===============================
+    # -------------------------------
     # ADMIN RESET (IF DRAW EXISTS)
-    # ===============================
+    # -------------------------------
     if os.path.exists(WINNER_FILE):
         with st.expander("⚙️ Admin Reset Options"):
-            st.warning("⚠️ A draw has already been completed.")
+            st.warning("⚠️ A draw has already been conducted.")
             if st.button("🔄 Reset for New Draw (Admin Only)"):
                 os.remove(WINNER_FILE)
-                st.success("✅ Winners record deleted.")
+                st.success("✅ Winners record deleted. Ready for a new draw.")
                 st.rerun()
 
         previous_winners = pd.read_excel(WINNER_FILE)
         st.subheader("🎉 Previous Winners")
         st.dataframe(previous_winners)
 
-    # ===============================
+    # -------------------------------
     # RUN LOTTERY (ONE TIME ONLY)
-    # ===============================
+    # -------------------------------
     else:
         num_winners = st.number_input(
             "🏆 Number of winners to select",
@@ -96,16 +96,16 @@ if password == ADMIN_PASSWORD:
 
             winners = members_df.sample(n=num_winners).reset_index(drop=True)
 
-            st.success("🎉 Winners Successfully Selected!")
+            st.success("🎉 Winners Selected!")
             st.subheader("🏆 Winners List")
             st.dataframe(winners)
 
             # Save winners to lock the draw
             winners.to_excel(WINNER_FILE, index=False)
 
-            # ===============================
+            # -------------------------------
             # DOWNLOAD WINNERS FILE
-            # ===============================
+            # -------------------------------
             def to_excel(df):
                 buffer = BytesIO()
                 with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
