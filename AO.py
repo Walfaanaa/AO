@@ -3,6 +3,7 @@ import pandas as pd
 from io import BytesIO
 import time
 import os
+from dotenv import load_dotenv
 
 # -------------------------------
 # 1️⃣ Page Setup
@@ -22,12 +23,12 @@ st.markdown(
 # -------------------------------
 # 2️⃣ Load Members Data
 # -------------------------------
-DATA_FILE = "AO_uqubii.xlsx"   # Your member Excel file
+DATA_FILE = "AO_uqubii.xlsx"  # Your actual data file
 WINNER_FILE = "winners_record.xlsx"
 
 try:
     members_df = pd.read_excel(DATA_FILE)
-    st.success(f"✅ {len(members_df)} members loaded successfully from admin file.")
+    st.success(f"✅ {len(members_df)} members loaded successfully from {DATA_FILE}.")
     st.dataframe(members_df)
 except FileNotFoundError:
     st.error(f"❌ {DATA_FILE} file not found! Please upload it to your app folder or GitHub repo.")
@@ -36,12 +37,21 @@ except FileNotFoundError:
 # -------------------------------
 # 3️⃣ Admin Authorization
 # -------------------------------
-try:
-    AUTHORIZED_CODE = st.secrets["ADMIN_PASSWORD"]
-except KeyError:
-    st.error("❌ ADMIN_PASSWORD not set in Streamlit Secrets.")
-    st.stop()
+# Hybrid password: Cloud secret or local .env
+def get_admin_password():
+    try:
+        # Try Cloud secret first
+        return st.secrets["ADMIN_PASSWORD"]
+    except Exception:
+        # Fallback to local .env
+        load_dotenv()
+        return os.getenv("STREAMLIT_ADMIN_PASSWORD")
 
+AUTHORIZED_CODE = get_admin_password()
+
+if AUTHORIZED_CODE is None:
+    st.warning("⚠️ Admin password not set! Add it to Streamlit Secrets (Cloud) or .env (local).")
+    
 password = st.text_input("Enter admin passcode to enable draw:", type="password")
 
 if password == AUTHORIZED_CODE:
@@ -56,7 +66,7 @@ if password == AUTHORIZED_CODE:
             if st.button("🔄 Reset for New Round (Admin Only)"):
                 os.remove(WINNER_FILE)
                 st.success("✅ Winners record deleted. You can now run a new draw.")
-                st.rerun()
+                st.experimental_rerun()
 
         # Show previous winners
         previous_winners = pd.read_excel(WINNER_FILE)
@@ -109,7 +119,6 @@ if password == AUTHORIZED_CODE:
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
 
-else:
-    if password:
-        st.error("❌ Invalid passcode. Access denied.")
+elif password:
+    st.error("❌ Invalid passcode. Access denied.")
     st.info("You can view the member list, but only authorized staff can pick winners.")
