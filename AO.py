@@ -23,7 +23,7 @@ st.markdown(
 # ===============================
 # 2️⃣ FILE PATHS
 # ===============================
-DATA_FILE = "AO_uqubii.xlsx"
+DATA_FILE = "AO_uqubii.xlsx"   # change if your file name is different
 WINNER_FILE = "winners_record.xlsx"
 
 # ===============================
@@ -34,7 +34,7 @@ try:
     st.success(f"✅ {len(members_df)} members loaded successfully.")
     st.dataframe(members_df)
 except FileNotFoundError:
-    st.error("❌ members_data.xlsx not found. Upload it to your app folder or GitHub repo.")
+    st.error("❌ members_data.xlsx not found. Upload it to your GitHub repo.")
     st.stop()
 
 # ===============================
@@ -49,17 +49,17 @@ except KeyError:
 password = st.text_input("🔐 Enter admin passcode to enable draw:", type="password")
 
 # ===============================
-# 5️⃣ AUTHORIZED ACCESS
+# 5️⃣ AUTHORIZED ADMIN AREA
 # ===============================
 if password == AUTHORIZED_CODE:
     st.success("✅ Access granted. Admin controls enabled.")
 
-    # ===============================
+    # -------------------------------
     # ADMIN RESET (IF DRAW EXISTS)
-    # ===============================
+    # -------------------------------
     if os.path.exists(WINNER_FILE):
         with st.expander("⚙️ Admin Reset Options"):
-            st.warning("⚠️ A draw has already been completed.")
+            st.warning("⚠️ A previous draw has already been conducted.")
             if st.button("🔄 Reset for New Round (Admin Only)"):
                 os.remove(WINNER_FILE)
                 st.success("✅ Winners record deleted. Ready for a new draw.")
@@ -69,9 +69,9 @@ if password == AUTHORIZED_CODE:
         st.subheader("🎉 Previous Winners")
         st.dataframe(previous_winners)
 
-    # ===============================
-    # PICK WINNERS (ONE TIME)
-    # ===============================
+    # -------------------------------
+    # PICK WINNERS (ONE TIME ONLY)
+    # -------------------------------
     else:
         num_winners = st.number_input(
             "🏆 Number of winners to select",
@@ -97,32 +97,31 @@ if password == AUTHORIZED_CODE:
             st.subheader("🏆 Winners List")
             st.dataframe(winners)
 
-            # Save winners (lock draw)
+            # Lock draw by saving winners
             winners.to_excel(WINNER_FILE, index=False)
 
-            # ===============================
+            # -------------------------------
             # DOWNLOAD EXCEL
-            # ===============================
-            def to_excel(df):
+            # -------------------------------
+            def convert_df_to_excel(df):
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
                     df.to_excel(writer, index=False, sheet_name="Winners")
                 return output.getvalue()
 
-            excel_data = to_excel(winners)
+            excel_data = convert_df_to_excel(winners)
 
             st.download_button(
-                "💾 Download Winners (Excel)",
+                "💾 Download Winners as Excel",
                 excel_data,
                 file_name="EGSA_lottery_winners.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
 
 # ===============================
-# 6️⃣ UNAUTHORIZED ACCESS
+# 6️⃣ UNAUTHORIZED USERS
 # ===============================
 else:
     if password:
         st.error("❌ Invalid passcode. Access denied.")
     st.info("📄 Member list is view-only. Admin access required to run the draw.")
-
