@@ -23,7 +23,7 @@ st.markdown(
 # -------------------------------
 # 2️⃣ Load Members Data
 # -------------------------------
-DATA_FILE = "AO_uqubii.xlsx"  # Your actual data file
+DATA_FILE = "AO_uqubii.xlsx"
 WINNER_FILE = "winners_record.xlsx"
 
 try:
@@ -37,13 +37,10 @@ except FileNotFoundError:
 # -------------------------------
 # 3️⃣ Admin Authorization
 # -------------------------------
-# Hybrid password: Cloud secret or local .env
 def get_admin_password():
     try:
-        # Try Cloud secret first
         return st.secrets["ADMIN_PASSWORD"]
     except Exception:
-        # Fallback to local .env
         load_dotenv()
         return os.getenv("STREAMLIT_ADMIN_PASSWORD")
 
@@ -51,22 +48,37 @@ AUTHORIZED_CODE = get_admin_password()
 
 if AUTHORIZED_CODE is None:
     st.warning("⚠️ Admin password not set! Add it to Streamlit Secrets (Cloud) or .env (local).")
-    
+
 password = st.text_input("Enter admin passcode to enable draw:", type="password")
 
 if password == AUTHORIZED_CODE:
+
     st.success("Access granted! You can now enable the draw.")
 
     # -------------------------------
-    # Admin Reset
+    # Reset Section WITH SECOND PASSWORD
     # -------------------------------
     if os.path.exists(WINNER_FILE):
+
+        RESET_PASSWORD = "EGSA_RESET_2026"
+
         with st.expander("⚙️ Admin Reset Options"):
+
             st.warning("⚠️ A previous draw has already been conducted.")
+
+            reset_pass_input = st.text_input(
+                "Enter reset password to reset draw",
+                type="password"
+            )
+
             if st.button("🔄 Reset for New Round (Admin Only)"):
-                os.remove(WINNER_FILE)
-                st.success("✅ Winners record deleted. You can now run a new draw.")
-                st.experimental_rerun()
+
+                if reset_pass_input == RESET_PASSWORD:
+                    os.remove(WINNER_FILE)
+                    st.success("✅ Winners record deleted. You can now run a new draw.")
+                    st.experimental_rerun()
+                else:
+                    st.error("❌ Incorrect reset password.")
 
         # Show previous winners
         previous_winners = pd.read_excel(WINNER_FILE)
@@ -77,6 +89,7 @@ if password == AUTHORIZED_CODE:
     # Pick Winners
     # -------------------------------
     else:
+
         num_winners = st.number_input(
             "🏆 Number of winners to select",
             min_value=1,
@@ -85,25 +98,29 @@ if password == AUTHORIZED_CODE:
         )
 
         if st.button("🎲 Pick Winners"):
+
             placeholder = st.empty()
+
             with placeholder.container():
+
                 st.info("Picking winners... Please wait.")
+
                 progress_text = st.empty()
                 progress_bar = st.progress(0)
+
                 for i in range(101):
                     time.sleep(0.01)
                     progress_text.text(f"Progress: {i}%")
                     progress_bar.progress(i)
 
                 winners = members_df.sample(n=num_winners).reset_index(drop=True)
+
                 st.success("🎉 Winners Selected!")
                 st.subheader("🎉 Winners List")
                 st.dataframe(winners)
 
-                # Save winners record
                 winners.to_excel(WINNER_FILE, index=False)
 
-                # Download winners
                 def convert_df_to_excel(df):
                     output = BytesIO()
                     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
