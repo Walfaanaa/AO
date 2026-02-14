@@ -39,12 +39,17 @@ except FileNotFoundError:
 # -------------------------------
 def get_admin_password():
     try:
-        return st.secrets["ADMIN_PASSWORD"]
+        return st.secrets["ADMIN_PASSWORD"]  # For Streamlit Cloud
     except Exception:
-        load_dotenv()
+        load_dotenv()  # Local fallback
         return os.getenv("STREAMLIT_ADMIN_PASSWORD")
 
+def get_reset_password():
+    load_dotenv()  # Load local .env file
+    return os.getenv("STREAMLIT_RESET_PASSWORD")
+
 AUTHORIZED_CODE = get_admin_password()
+RESET_PASSWORD = get_reset_password()
 
 if AUTHORIZED_CODE is None:
     st.warning("⚠️ Admin password not set! Add it to Streamlit Secrets (Cloud) or .env (local).")
@@ -56,11 +61,9 @@ if password == AUTHORIZED_CODE:
     st.success("Access granted! You can now enable the draw.")
 
     # -------------------------------
-    # Reset Section WITH SECOND PASSWORD
+    # Reset Section WITH .env PASSWORD
     # -------------------------------
     if os.path.exists(WINNER_FILE):
-
-        RESET_PASSWORD = "EGSA_RESET_2026"
 
         with st.expander("⚙️ Admin Reset Options"):
 
