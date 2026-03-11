@@ -14,6 +14,32 @@ st.set_page_config(
     page_icon="🎟️"
 )
 
+# -------------------------------
+# 🎨 Custom UI Style
+# -------------------------------
+st.markdown("""
+<style>
+
+.stApp {
+    background: linear-gradient(to right,#4facfe,#00f2fe);
+}
+
+h1 {
+    text-align:center;
+}
+
+.stButton>button {
+    background-color:#ff4b4b;
+    color:white;
+    border-radius:12px;
+    height:3em;
+    width:200px;
+    font-size:18px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🎟️ EGSA Lottery Winners App (Authorized & One-Time Draw)")
 st.markdown(
     "Welcome to the **EGSA Lottery Winners App**. "
@@ -31,7 +57,7 @@ try:
     st.success(f"✅ {len(members_df)} members loaded successfully from {DATA_FILE}.")
     st.dataframe(members_df)
 except FileNotFoundError:
-    st.error(f"❌ {DATA_FILE} file not found! Please upload it to your app folder or GitHub repo.")
+    st.error(f"❌ {DATA_FILE} file not found! Please upload it to your app folder.")
     st.stop()
 
 # -------------------------------
@@ -39,29 +65,32 @@ except FileNotFoundError:
 # -------------------------------
 def get_admin_password():
     try:
-        return st.secrets["ADMIN_PASSWORD"]  # For Streamlit Cloud
+        return st.secrets["ADMIN_PASSWORD"]
     except Exception:
-        load_dotenv()  # Local fallback
+        load_dotenv()
         return os.getenv("STREAMLIT_ADMIN_PASSWORD")
 
 def get_reset_password():
-    load_dotenv()  # Load local .env file
+    load_dotenv()
     return os.getenv("STREAMLIT_RESET_PASSWORD")
 
 AUTHORIZED_CODE = get_admin_password()
 RESET_PASSWORD = get_reset_password()
 
 if AUTHORIZED_CODE is None:
-    st.warning("⚠️ Admin password not set! Add it to Streamlit Secrets (Cloud) or .env (local).")
+    st.warning("⚠️ Admin password not set! Add it to Streamlit Secrets or .env file.")
 
-password = st.text_input("Enter admin passcode to enable draw:", type="password")
+password = st.text_input("🔐 Enter admin passcode to enable draw:", type="password")
 
+# -------------------------------
+# 4️⃣ If Authorized
+# -------------------------------
 if password == AUTHORIZED_CODE:
 
-    st.success("Access granted! You can now enable the draw.")
+    st.success("✅ Access granted! You can now enable the draw.")
 
     # -------------------------------
-    # Reset Section WITH .env PASSWORD
+    # Reset Section
     # -------------------------------
     if os.path.exists(WINNER_FILE):
 
@@ -79,17 +108,18 @@ if password == AUTHORIZED_CODE:
                 if reset_pass_input == RESET_PASSWORD:
                     os.remove(WINNER_FILE)
                     st.success("✅ Winners record deleted. You can now run a new draw.")
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error("❌ Incorrect reset password.")
 
         # Show previous winners
         previous_winners = pd.read_excel(WINNER_FILE)
+
         st.subheader("🎉 Previous Winners")
         st.dataframe(previous_winners)
 
     # -------------------------------
-    # Pick Winners
+    # 5️⃣ Pick Winners
     # -------------------------------
     else:
 
@@ -102,43 +132,47 @@ if password == AUTHORIZED_CODE:
 
         if st.button("🎲 Pick Winners"):
 
-            placeholder = st.empty()
-
-            with placeholder.container():
-
-                st.info("Picking winners... Please wait.")
+            with st.spinner("🎲 Drawing lottery winners... Please wait"):
 
                 progress_text = st.empty()
                 progress_bar = st.progress(0)
 
                 for i in range(101):
-                    time.sleep(0.01)
+                    time.sleep(0.02)
                     progress_text.text(f"Progress: {i}%")
                     progress_bar.progress(i)
 
-                winners = members_df.sample(n=num_winners).reset_index(drop=True)
+            winners = members_df.sample(n=num_winners).reset_index(drop=True)
 
-                st.success("🎉 Winners Selected!")
-                st.subheader("🎉 Winners List")
-                st.dataframe(winners)
+            st.success("🎉 Winners Selected!")
+            st.balloons()
 
-                winners.to_excel(WINNER_FILE, index=False)
+            st.subheader("🏆 Winners List")
+            st.dataframe(winners)
 
-                def convert_df_to_excel(df):
-                    output = BytesIO()
-                    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-                        df.to_excel(writer, index=False, sheet_name="Winners")
-                    return output.getvalue()
+            winners.to_excel(WINNER_FILE, index=False)
 
-                excel_data = convert_df_to_excel(winners)
+            # -------------------------------
+            # Download Excel
+            # -------------------------------
+            def convert_df_to_excel(df):
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+                    df.to_excel(writer, index=False, sheet_name="Winners")
+                return output.getvalue()
 
-                st.download_button(
-                    label="💾 Download Winners as Excel",
-                    data=excel_data,
-                    file_name="EGSA_lottery_winners.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+            excel_data = convert_df_to_excel(winners)
 
+            st.download_button(
+                label="💾 Download Winners as Excel",
+                data=excel_data,
+                file_name="EGSA_lottery_winners.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+# -------------------------------
+# 6️⃣ If Wrong Password
+# -------------------------------
 elif password:
     st.error("❌ Invalid passcode. Access denied.")
     st.info("You can view the member list, but only authorized staff can pick winners.")
