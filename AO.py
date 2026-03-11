@@ -42,8 +42,16 @@ h1 {
 
 st.title("🎟️ EGSA Lottery Winners App (Authorized & One-Time Draw)")
 st.markdown(
-    "Welcome to the **EGSA Lottery Winners App**. "
-    "This system ensures fair, transparent, and one-time-only draws managed by authorized personnel."
+    """
+    <h3 style='text-align: center;'>
+    Welcome to the <b>EGSA Lottery Winners App</b>
+    </h3>
+
+    <p style='text-align: center; font-size:18px;'>
+    This system ensures fair, transparent, and one-time-only draws managed by authorized personnel.
+    </p>
+    """,
+    unsafe_allow_html=True
 )
 
 # -------------------------------
@@ -176,3 +184,4 @@ if password == AUTHORIZED_CODE:
 elif password:
     st.error("❌ Invalid passcode. Access denied.")
     st.info("You can view the member list, but only authorized staff can pick winners.")
+
