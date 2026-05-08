@@ -14,11 +14,14 @@ st.set_page_config(
 )
 
 # -------------------------------
-# 🖼️ Logo
+# 🖼️ Center Logo
 # -------------------------------
 logo_url = "https://raw.githubusercontent.com/Walfaanaa/AO/main/log.jpg"
 
-st.image(logo_url, width=120)
+col1, col2, col3 = st.columns([1,2,1])
+
+with col2:
+    st.image(logo_url, width=180)
 
 # -------------------------------
 # 🎨 Custom UI Style
