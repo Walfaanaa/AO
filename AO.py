@@ -9,10 +9,16 @@ from dotenv import load_dotenv
 # 1️⃣ Page Setup
 # -------------------------------
 st.set_page_config(
-    page_title="🎟️ EGSA Lottery Winners",
-    layout="wide",
-    page_icon="🎟️"
+    page_title="EGSA Lottery Winners",
+    layout="wide"
 )
+
+# -------------------------------
+# 🖼️ Logo
+# -------------------------------
+logo_url = "https://raw.githubusercontent.com/Walfaanaa/AO/main/log.jpg"
+
+st.image(logo_url, width=120)
 
 # -------------------------------
 # 🎨 Custom UI Style
@@ -40,7 +46,8 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🎟️ EGSA Lottery Winners App (Authorized & One-Time Draw)")
+st.title("EGSA Lottery Winners App (Authorized & One-Time Draw)")
+
 st.markdown(
     """
     <h3 style='text-align:center;'>
@@ -165,8 +172,10 @@ if password == AUTHORIZED_CODE:
             # -------------------------------
             def convert_df_to_excel(df):
                 output = BytesIO()
+
                 with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
                     df.to_excel(writer, index=False, sheet_name="Winners")
+
                 return output.getvalue()
 
             excel_data = convert_df_to_excel(winners)
@@ -184,5 +193,3 @@ if password == AUTHORIZED_CODE:
 elif password:
     st.error("❌ Invalid passcode. Access denied.")
     st.info("You can view the member list, but only authorized staff can pick winners.")
-
-
