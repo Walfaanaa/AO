@@ -18,7 +18,7 @@ st.set_page_config(
 # -------------------------------
 logo_url = "https://raw.githubusercontent.com/Walfaanaa/AO/main/log.jpg"
 
-col1, col2, col3 = st.columns([1,1,1])
+col1, col2, col3 = st.columns([1,3,1])
 
 with col2:
     st.image(logo_url, width=580)
