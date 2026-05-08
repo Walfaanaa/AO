@@ -21,7 +21,7 @@ logo_url = "https://raw.githubusercontent.com/Walfaanaa/AO/main/log.jpg"
 col1, col2, col3 = st.columns([1,2,1])
 
 with col2:
-    st.image(logo_url, width=280)
+    st.image(logo_url, width=580)
 
 # -------------------------------
 # 🎨 Custom UI Style
