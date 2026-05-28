@@ -72,8 +72,14 @@ WINNER_FILE = "winners_record.xlsx"
 
 try:
     members_df = pd.read_excel(DATA_FILE)
+
+    # Optional: Number member list from 1
+    members_display = members_df.copy()
+    members_display.insert(0, "No", range(1, len(members_display) + 1))
+
     st.success(f"✅ {len(members_df)} members loaded successfully from {DATA_FILE}.")
-    st.dataframe(members_df)
+    st.dataframe(members_display)
+
 except FileNotFoundError:
     st.error(f"❌ {DATA_FILE} file not found! Please upload it to your app folder.")
     st.stop()
@@ -98,7 +104,10 @@ RESET_PASSWORD = get_reset_password()
 if AUTHORIZED_CODE is None:
     st.warning("⚠️ Admin password not set! Add it to Streamlit Secrets or .env file.")
 
-password = st.text_input("🔐 Enter admin passcode to enable draw:", type="password")
+password = st.text_input(
+    "🔐 Enter admin passcode to enable draw:",
+    type="password"
+)
 
 # -------------------------------
 # 4️⃣ If Authorized
@@ -130,7 +139,9 @@ if password == AUTHORIZED_CODE:
                 else:
                     st.error("❌ Incorrect reset password.")
 
-        # Show previous winners
+        # -------------------------------
+        # Show Previous Winners
+        # -------------------------------
         previous_winners = pd.read_excel(WINNER_FILE)
 
         st.subheader("🎉 Previous Winners")
@@ -160,7 +171,19 @@ if password == AUTHORIZED_CODE:
                     progress_text.text(f"Progress: {i}%")
                     progress_bar.progress(i)
 
-            winners = members_df.sample(n=num_winners).reset_index(drop=True)
+            # -------------------------------
+            # Select Winners
+            # -------------------------------
+            winners = members_df.sample(
+                n=num_winners
+            ).reset_index(drop=True)
+
+            # Number winners from 1
+            winners.insert(
+                0,
+                "No",
+                range(1, len(winners) + 1)
+            )
 
             st.success("🎉 Winners Selected!")
             st.balloons()
@@ -168,7 +191,11 @@ if password == AUTHORIZED_CODE:
             st.subheader("🏆 Winners List")
             st.dataframe(winners)
 
-            winners.to_excel(WINNER_FILE, index=False)
+            # Save winners
+            winners.to_excel(
+                WINNER_FILE,
+                index=False
+            )
 
             # -------------------------------
             # Download Excel
@@ -176,8 +203,15 @@ if password == AUTHORIZED_CODE:
             def convert_df_to_excel(df):
                 output = BytesIO()
 
-                with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-                    df.to_excel(writer, index=False, sheet_name="Winners")
+                with pd.ExcelWriter(
+                    output,
+                    engine="xlsxwriter"
+                ) as writer:
+                    df.to_excel(
+                        writer,
+                        index=False,
+                        sheet_name="Winners"
+                    )
 
                 return output.getvalue()
 
@@ -195,4 +229,6 @@ if password == AUTHORIZED_CODE:
 # -------------------------------
 elif password:
     st.error("❌ Invalid passcode. Access denied.")
-    st.info("You can view the member list, but only authorized staff can pick winners.")
+    st.info(
+        "You can view the member list, but only authorized staff can pick winners."
+    )
