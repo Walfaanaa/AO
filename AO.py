@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -18,7 +19,7 @@ st.set_page_config(
 # -------------------------------
 logo_url = "https://raw.githubusercontent.com/Walfaanaa/AO/main/log.jpg"
 
-col1, col2, col3 = st.columns([1,3,1])
+col1, col2, col3 = st.columns([1, 3, 1])
 
 with col2:
     st.image(logo_url, width=580)
@@ -73,15 +74,34 @@ WINNER_FILE = "winners_record.xlsx"
 try:
     members_df = pd.read_excel(DATA_FILE)
 
-    # Optional: Number member list from 1
-    members_display = members_df.copy()
-    members_display.insert(0, "No", range(1, len(members_display) + 1))
+    # Remove unwanted Excel index columns
+    members_df = members_df.loc[
+        :,
+        ~members_df.columns.astype(str).str.contains("^Unnamed")
+    ]
 
-    st.success(f"✅ {len(members_df)} members loaded successfully from {DATA_FILE}.")
-    st.dataframe(members_display)
+    # Add numbering column starting from 1
+    members_display = members_df.copy()
+    members_display.insert(
+        0,
+        "No",
+        range(1, len(members_display) + 1)
+    )
+
+    st.success(
+        f"✅ {len(members_df)} members loaded successfully from {DATA_FILE}."
+    )
+
+    st.dataframe(
+        members_display,
+        hide_index=True,
+        use_container_width=True
+    )
 
 except FileNotFoundError:
-    st.error(f"❌ {DATA_FILE} file not found! Please upload it to your app folder.")
+    st.error(
+        f"❌ {DATA_FILE} file not found! Please upload it to your app folder."
+    )
     st.stop()
 
 # -------------------------------
@@ -102,7 +122,9 @@ AUTHORIZED_CODE = get_admin_password()
 RESET_PASSWORD = get_reset_password()
 
 if AUTHORIZED_CODE is None:
-    st.warning("⚠️ Admin password not set! Add it to Streamlit Secrets or .env file.")
+    st.warning(
+        "⚠️ Admin password not set! Add it to Streamlit Secrets or .env file."
+    )
 
 password = st.text_input(
     "🔐 Enter admin passcode to enable draw:",
@@ -116,14 +138,13 @@ if password == AUTHORIZED_CODE:
 
     st.success("✅ Access granted! You can now enable the draw.")
 
-    # -------------------------------
-    # Reset Section
-    # -------------------------------
     if os.path.exists(WINNER_FILE):
 
         with st.expander("⚙️ Admin Reset Options"):
 
-            st.warning("⚠️ A previous draw has already been conducted.")
+            st.warning(
+                "⚠️ A previous draw has already been conducted."
+            )
 
             reset_pass_input = st.text_input(
                 "Enter reset password to reset draw",
@@ -134,7 +155,9 @@ if password == AUTHORIZED_CODE:
 
                 if reset_pass_input == RESET_PASSWORD:
                     os.remove(WINNER_FILE)
-                    st.success("✅ Winners record deleted. You can now run a new draw.")
+                    st.success(
+                        "✅ Winners record deleted. You can now run a new draw."
+                    )
                     st.rerun()
                 else:
                     st.error("❌ Incorrect reset password.")
@@ -144,14 +167,31 @@ if password == AUTHORIZED_CODE:
         # -------------------------------
         previous_winners = pd.read_excel(WINNER_FILE)
 
-        st.subheader("🎉 Previous Winners")
-        st.dataframe(previous_winners)
+        previous_winners = previous_winners.loc[
+            :,
+            ~previous_winners.columns.astype(str).str.contains("^Unnamed")
+        ]
 
-    # -------------------------------
-    # 5️⃣ Pick Winners
-    # -------------------------------
+        if "No" not in previous_winners.columns:
+            previous_winners.insert(
+                0,
+                "No",
+                range(1, len(previous_winners) + 1)
+            )
+
+        st.subheader("🎉 Previous Winners")
+
+        st.dataframe(
+            previous_winners,
+            hide_index=True,
+            use_container_width=True
+        )
+
     else:
 
+        # -------------------------------
+        # 5️⃣ Pick Winners
+        # -------------------------------
         num_winners = st.number_input(
             "🏆 Number of winners to select",
             min_value=1,
@@ -161,7 +201,9 @@ if password == AUTHORIZED_CODE:
 
         if st.button("🎲 Pick Winners"):
 
-            with st.spinner("🎲 Drawing lottery winners... Please wait"):
+            with st.spinner(
+                "🎲 Drawing lottery winners... Please wait"
+            ):
 
                 progress_text = st.empty()
                 progress_bar = st.progress(0)
@@ -171,14 +213,10 @@ if password == AUTHORIZED_CODE:
                     progress_text.text(f"Progress: {i}%")
                     progress_bar.progress(i)
 
-            # -------------------------------
-            # Select Winners
-            # -------------------------------
             winners = members_df.sample(
                 n=num_winners
             ).reset_index(drop=True)
 
-            # Number winners from 1
             winners.insert(
                 0,
                 "No",
@@ -189,7 +227,12 @@ if password == AUTHORIZED_CODE:
             st.balloons()
 
             st.subheader("🏆 Winners List")
-            st.dataframe(winners)
+
+            st.dataframe(
+                winners,
+                hide_index=True,
+                use_container_width=True
+            )
 
             # Save winners
             winners.to_excel(
@@ -232,3 +275,4 @@ elif password:
     st.info(
         "You can view the member list, but only authorized staff can pick winners."
     )
+```
